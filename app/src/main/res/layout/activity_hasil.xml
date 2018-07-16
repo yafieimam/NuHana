@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="100px"
+    tools:context="com.yafieimam.nuhanaapp.HasilActivity">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/layout_hasil"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="261dp"
+        tools:layout_editor_absoluteY="254dp">
+
+        <ImageView
+            android:id="@+id/imageViewHasil"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="100px" />
+
+        <ImageView
+            android:id="@+id/imageViewHasil2"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="650px" />
+
+        <ImageView
+            android:id="@+id/imageViewHasil3"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="1200px" />
+
+        <ImageView
+            android:id="@+id/imageViewHasil4"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="1750px" />
+
+        <Button
+            android:id="@+id/btnEkstraksiFitur"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="13dp"
+            android:layout_weight="0.17"
+            android:text="Ekstraksi Fitur" />
+
+    </RelativeLayout>
+
+</android.support.constraint.ConstraintLayout>

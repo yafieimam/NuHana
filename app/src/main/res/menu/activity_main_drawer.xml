@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_nulis"
+            android:icon="@drawable/ic_menu_nulis"
+            android:title="Nulis Yuk" />
+        <item
+            android:id="@+id/nav_sinau"
+            android:icon="@drawable/ic_menu_sinau"
+            android:title="Sinau Yuk" />
+        <item
+            android:id="@+id/nav_tutorial"
+            android:icon="@drawable/ic_menu_tutorial"
+            android:title="Tutorial" />
+        <item
+            android:id="@+id/nav_pengaturan"
+            android:icon="@drawable/ic_menu_pengaturan"
+            android:title="Pengaturan" />
+        <item
+            android:id="@+id/nav_trainingdata"
+            android:icon="@drawable/ic_training_data"
+            android:title="Ekstraksi Fitur Data Training" />
+        <item
+            android:id="@+id/nav_ekstraksifitur"
+            android:icon="@drawable/ic_menu_image"
+            android:title="Percobaan Ekstraksi Fitur" />
+    </group>
+
+</menu>

@@ -17,30 +17,36 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 4;
 
     // Database Name
     private static final String DATABASE_NAME = "dataset_aksara_jawa";
 
     // Tables name
     private static final String TABLE_AKSARA_JAWA = "aksara_jawa";
-    private static final String TABLE_DATASET = "dataset_aksara_jawa";
-    private static final String TABLE_FEATURE = "fitur_dataset";
+    private static final String TABLE_FEATURE = "fitur_data_training";
+    private static final String TABLE_WEIGHT_NN_1 = "weight_nn_satu";
+    private static final String TABLE_WEIGHT_NN_2 = "weight_nn_dua";
+    private static final String TABLE_WEIGHT_NN_3 = "weight_nn_tiga";
 
     // Tables Columns names
     private static final String KEY_ID = "id";
     private static final String KEY_AKSARA_JAWA = "nama_aksara_jawa";
-    private static final String KEY_ID_AKSARA_JAWA = "id_aksara_jawa";
-    private static final String KEY_ID_DATASET = "id_dataset";
 
     private static final String CREATE_AKSARA_JAWA_TABLE = "CREATE TABLE " + TABLE_AKSARA_JAWA + "("
             + KEY_ID + " INTEGER PRIMARY KEY," + KEY_AKSARA_JAWA + " TEXT" + ")";
 
-    private static final  String CREATE_DATASET_TABLE = "CREATE TABLE " + TABLE_DATASET + "("
-            + KEY_ID + " INTEGER PRIMARY KEY," + KEY_ID_AKSARA_JAWA + " INTEGER" + ")";
+    private static final String CREATE_FEATURE_TABLE = "CREATE TABLE " + TABLE_FEATURE + "("
+            + KEY_ID + " INTEGER PRIMARY KEY)";
 
-    private static final  String CREATE_FEATURE_TABLE = "CREATE TABLE " + TABLE_FEATURE + "("
-            + KEY_ID + " INTEGER PRIMARY KEY," + KEY_ID_AKSARA_JAWA + " INTEGER," + KEY_ID_DATASET + " INTEGER" + ")";
+    private static final String CREATE_WEIGHT_NN_1_TABLE = "CREATE TABLE " + TABLE_WEIGHT_NN_1 + "("
+            + KEY_ID + " INTEGER PRIMARY KEY)";
+
+    private static final String CREATE_WEIGHT_NN_2_TABLE = "CREATE TABLE " + TABLE_WEIGHT_NN_2 + "("
+            + KEY_ID + " INTEGER PRIMARY KEY)";
+
+    private static final String CREATE_WEIGHT_NN_3_TABLE = "CREATE TABLE " + TABLE_WEIGHT_NN_3 + "("
+            + KEY_ID + " INTEGER PRIMARY KEY)";
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -51,10 +57,23 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_AKSARA_JAWA_TABLE);
-        db.execSQL(CREATE_DATASET_TABLE);
         db.execSQL(CREATE_FEATURE_TABLE);
-        for(int i = 0; i < 100; i++){
-            db.execSQL("ALTER TABLE " + TABLE_FEATURE + " ADD COLUMN feature" + (i+1) + " INTEGER DEFAULT 0");
+        db.execSQL("ALTER TABLE " + TABLE_FEATURE + " ADD COLUMN huruf TEXT");
+        for(int i = 1; i <= 54; i++){
+            db.execSQL("ALTER TABLE " + TABLE_FEATURE + " ADD COLUMN f" + i + " DOUBLE DEFAULT 0");
+        }
+        db.execSQL("ALTER TABLE " + TABLE_FEATURE + " ADD COLUMN label INTEGER DEFAULT 0");
+        db.execSQL(CREATE_WEIGHT_NN_1_TABLE);
+        for(int i = 1; i <= 43; i++){
+            db.execSQL("ALTER TABLE " + TABLE_WEIGHT_NN_1 + " ADD COLUMN weight" + i + " DOUBLE DEFAULT 0");
+        }
+        db.execSQL(CREATE_WEIGHT_NN_2_TABLE);
+        for(int i = 1; i <= 32; i++){
+            db.execSQL("ALTER TABLE " + TABLE_WEIGHT_NN_2 + " ADD COLUMN weight" + i + " DOUBLE DEFAULT 0");
+        }
+        db.execSQL(CREATE_WEIGHT_NN_3_TABLE);
+        for(int i = 1; i <= 20; i++){
+            db.execSQL("ALTER TABLE " + TABLE_WEIGHT_NN_3 + " ADD COLUMN weight" + i + " DOUBLE DEFAULT 0");
         }
     }
 
@@ -63,8 +82,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_AKSARA_JAWA);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATASET);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_FEATURE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_WEIGHT_NN_1);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_WEIGHT_NN_2);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_WEIGHT_NN_3);
 
         // Create tables again
         onCreate(db);
@@ -84,34 +105,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         // Inserting Row
         db.insert(TABLE_AKSARA_JAWA, null, values);
         db.close(); // Closing database connection
-    }
-
-    // Adding new dataset
-    public long addDataset(long id_aksara_jawa) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(KEY_ID_AKSARA_JAWA, id_aksara_jawa);
-
-        long id = db.insert(TABLE_DATASET, null, values);
-        db.close(); // Closing database connection
-
-        return id;
-    }
-
-    public long addFeature(int dataset[], int id_aksara_jawa, int id_dataset) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(KEY_ID_AKSARA_JAWA, id_aksara_jawa);
-        values.put(KEY_ID_DATASET, id_dataset);
-        for(int i = 0; i< 100; i++){
-            values.put("feature" + (i+1), dataset[i]); // Aksara Jawa Name
-        }
-        long id = db.insert(TABLE_FEATURE, null, values);
-        db.close(); // Closing database connection
-
-        return id;
     }
 
     // Getting single aksara jawa
@@ -146,123 +139,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return aksara_jawa;
     }
 
-    public DatasetAksaraJawa getFeature(int id) {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        String query = "SELECT * FROM " + TABLE_DATASET + " WHERE " + KEY_ID + " = ?";
-
-        Cursor cursor = db.rawQuery(query, new String[] {String.valueOf(id)});
-        if (cursor != null)
-            cursor.moveToFirst();
-
-        DatasetAksaraJawa dataset_aksara_jawa = new DatasetAksaraJawa();
-        dataset_aksara_jawa.setID(Integer.parseInt(cursor.getString(0)));
-        dataset_aksara_jawa.setIDAksaraJawa(Integer.parseInt(cursor.getString(1)));
-        dataset_aksara_jawa.setIDDataset(Integer.parseInt(cursor.getString(2)));
-        dataset_aksara_jawa.setFeature1(cursor.getString(3));
-        dataset_aksara_jawa.setFeature2(cursor.getString(4));
-        dataset_aksara_jawa.setFeature3(cursor.getString(5));
-        dataset_aksara_jawa.setFeature4(cursor.getString(6));
-        dataset_aksara_jawa.setFeature5(cursor.getString(7));
-        dataset_aksara_jawa.setFeature6(cursor.getString(8));
-        dataset_aksara_jawa.setFeature7(cursor.getString(9));
-        dataset_aksara_jawa.setFeature8(cursor.getString(10));
-        dataset_aksara_jawa.setFeature9(cursor.getString(11));
-        dataset_aksara_jawa.setFeature10(cursor.getString(12));
-        dataset_aksara_jawa.setFeature11(cursor.getString(13));
-        dataset_aksara_jawa.setFeature12(cursor.getString(14));
-        dataset_aksara_jawa.setFeature13(cursor.getString(15));
-        dataset_aksara_jawa.setFeature14(cursor.getString(16));
-        dataset_aksara_jawa.setFeature15(cursor.getString(17));
-        dataset_aksara_jawa.setFeature16(cursor.getString(18));
-        dataset_aksara_jawa.setFeature17(cursor.getString(19));
-        dataset_aksara_jawa.setFeature18(cursor.getString(20));
-        dataset_aksara_jawa.setFeature19(cursor.getString(21));
-        dataset_aksara_jawa.setFeature20(cursor.getString(22));
-        dataset_aksara_jawa.setFeature21(cursor.getString(23));
-        dataset_aksara_jawa.setFeature22(cursor.getString(24));
-        dataset_aksara_jawa.setFeature23(cursor.getString(25));
-        dataset_aksara_jawa.setFeature24(cursor.getString(26));
-        dataset_aksara_jawa.setFeature25(cursor.getString(27));
-        dataset_aksara_jawa.setFeature26(cursor.getString(28));
-        dataset_aksara_jawa.setFeature27(cursor.getString(29));
-        dataset_aksara_jawa.setFeature28(cursor.getString(30));
-        dataset_aksara_jawa.setFeature29(cursor.getString(31));
-        dataset_aksara_jawa.setFeature30(cursor.getString(32));
-        dataset_aksara_jawa.setFeature31(cursor.getString(33));
-        dataset_aksara_jawa.setFeature32(cursor.getString(34));
-        dataset_aksara_jawa.setFeature33(cursor.getString(35));
-        dataset_aksara_jawa.setFeature34(cursor.getString(36));
-        dataset_aksara_jawa.setFeature35(cursor.getString(37));
-        dataset_aksara_jawa.setFeature36(cursor.getString(38));
-        dataset_aksara_jawa.setFeature37(cursor.getString(39));
-        dataset_aksara_jawa.setFeature38(cursor.getString(40));
-        dataset_aksara_jawa.setFeature39(cursor.getString(41));
-        dataset_aksara_jawa.setFeature40(cursor.getString(42));
-        dataset_aksara_jawa.setFeature41(cursor.getString(43));
-        dataset_aksara_jawa.setFeature42(cursor.getString(44));
-        dataset_aksara_jawa.setFeature43(cursor.getString(45));
-        dataset_aksara_jawa.setFeature44(cursor.getString(46));
-        dataset_aksara_jawa.setFeature45(cursor.getString(47));
-        dataset_aksara_jawa.setFeature46(cursor.getString(48));
-        dataset_aksara_jawa.setFeature47(cursor.getString(49));
-        dataset_aksara_jawa.setFeature48(cursor.getString(50));
-        dataset_aksara_jawa.setFeature49(cursor.getString(51));
-        dataset_aksara_jawa.setFeature50(cursor.getString(52));
-        dataset_aksara_jawa.setFeature51(cursor.getString(53));
-        dataset_aksara_jawa.setFeature52(cursor.getString(54));
-        dataset_aksara_jawa.setFeature53(cursor.getString(55));
-        dataset_aksara_jawa.setFeature54(cursor.getString(56));
-        dataset_aksara_jawa.setFeature55(cursor.getString(57));
-        dataset_aksara_jawa.setFeature56(cursor.getString(58));
-        dataset_aksara_jawa.setFeature57(cursor.getString(59));
-        dataset_aksara_jawa.setFeature58(cursor.getString(60));
-        dataset_aksara_jawa.setFeature59(cursor.getString(61));
-        dataset_aksara_jawa.setFeature60(cursor.getString(62));
-        dataset_aksara_jawa.setFeature61(cursor.getString(63));
-        dataset_aksara_jawa.setFeature62(cursor.getString(64));
-        dataset_aksara_jawa.setFeature63(cursor.getString(65));
-        dataset_aksara_jawa.setFeature64(cursor.getString(66));
-        dataset_aksara_jawa.setFeature65(cursor.getString(67));
-        dataset_aksara_jawa.setFeature66(cursor.getString(68));
-        dataset_aksara_jawa.setFeature67(cursor.getString(69));
-        dataset_aksara_jawa.setFeature68(cursor.getString(70));
-        dataset_aksara_jawa.setFeature69(cursor.getString(71));
-        dataset_aksara_jawa.setFeature70(cursor.getString(72));
-        dataset_aksara_jawa.setFeature71(cursor.getString(73));
-        dataset_aksara_jawa.setFeature72(cursor.getString(74));
-        dataset_aksara_jawa.setFeature73(cursor.getString(75));
-        dataset_aksara_jawa.setFeature74(cursor.getString(76));
-        dataset_aksara_jawa.setFeature75(cursor.getString(77));
-        dataset_aksara_jawa.setFeature76(cursor.getString(78));
-        dataset_aksara_jawa.setFeature77(cursor.getString(79));
-        dataset_aksara_jawa.setFeature78(cursor.getString(80));
-        dataset_aksara_jawa.setFeature79(cursor.getString(81));
-        dataset_aksara_jawa.setFeature80(cursor.getString(82));
-        dataset_aksara_jawa.setFeature81(cursor.getString(83));
-        dataset_aksara_jawa.setFeature82(cursor.getString(84));
-        dataset_aksara_jawa.setFeature83(cursor.getString(85));
-        dataset_aksara_jawa.setFeature84(cursor.getString(86));
-        dataset_aksara_jawa.setFeature85(cursor.getString(87));
-        dataset_aksara_jawa.setFeature86(cursor.getString(88));
-        dataset_aksara_jawa.setFeature87(cursor.getString(89));
-        dataset_aksara_jawa.setFeature88(cursor.getString(90));
-        dataset_aksara_jawa.setFeature89(cursor.getString(91));
-        dataset_aksara_jawa.setFeature90(cursor.getString(92));
-        dataset_aksara_jawa.setFeature91(cursor.getString(93));
-        dataset_aksara_jawa.setFeature92(cursor.getString(94));
-        dataset_aksara_jawa.setFeature93(cursor.getString(95));
-        dataset_aksara_jawa.setFeature94(cursor.getString(96));
-        dataset_aksara_jawa.setFeature95(cursor.getString(97));
-        dataset_aksara_jawa.setFeature96(cursor.getString(98));
-        dataset_aksara_jawa.setFeature97(cursor.getString(99));
-        dataset_aksara_jawa.setFeature98(cursor.getString(100));
-        dataset_aksara_jawa.setFeature99(cursor.getString(101));
-        dataset_aksara_jawa.setFeature100(cursor.getString(102));
-        // return dataset_aksara_jawa
-        return dataset_aksara_jawa;
-    }
-
     // Getting All Aksara Jawa
     public List<AksaraJawa> getAllAksaraJawa() {
         List<AksaraJawa> aksaraJawaList = new ArrayList<AksaraJawa>();
@@ -280,28 +156,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 aksara_jawa.setAksaraJawa(cursor.getString(1));
                 // Adding contact to list
                 aksaraJawaList.add(aksara_jawa);
-            } while (cursor.moveToNext());
-        }
-
-        // return aksara jawa list
-        return aksaraJawaList;
-    }
-
-    // Getting All Dataset
-    public List<DatasetAksaraJawa> getAllDataset() {
-        List<DatasetAksaraJawa> aksaraJawaList = new ArrayList<DatasetAksaraJawa>();
-        // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_DATASET;
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
-
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
-                DatasetAksaraJawa dataset_aksara_jawa = new DatasetAksaraJawa();
-                // Adding contact to list
-                aksaraJawaList.add(dataset_aksara_jawa);
             } while (cursor.moveToNext());
         }
 
@@ -334,9 +188,180 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String countQuery = "SELECT  * FROM " + TABLE_AKSARA_JAWA;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
         cursor.close();
 
         // return count
-        return cursor.getCount();
+        return count;
+    }
+
+    public int getFeatureCount() {
+        String countQuery = "SELECT  * FROM " + TABLE_FEATURE;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
+        cursor.close();
+        // return count
+        return count;
+    }
+
+    public int getWeightOneCount() {
+        String countQuery = "SELECT  * FROM " + TABLE_WEIGHT_NN_1;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
+        cursor.close();
+        // return count
+        return count;
+    }
+
+    public int getWeightTwoCount() {
+        String countQuery = "SELECT  * FROM " + TABLE_WEIGHT_NN_2;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
+        cursor.close();
+        // return count
+        return count;
+    }
+
+    public int getWeightThreeCount() {
+        String countQuery = "SELECT  * FROM " + TABLE_WEIGHT_NN_3;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
+        cursor.close();
+        // return count
+        return count;
+    }
+
+    public double[][] getFeatureDataTraining(double[] nilai_total){
+        final String TABLE_NAME = "fitur_data_training";
+        SQLiteDatabase db = this.getReadableDatabase();
+        double[][] data = new double[getFeatureCount()+1][54];
+
+        String selectQuery = "SELECT * FROM " + TABLE_FEATURE;
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            int i = 0;
+            do {
+                String[] columnNames = cursor.getColumnNames();
+                int a = 0;
+                for(int j = 2; j < columnNames.length-1; j++){
+                    data[i][a] = cursor.getDouble(cursor.getColumnIndex(columnNames[j]));
+                    a++;
+                }
+                i++;
+            } while (cursor.moveToNext());
+            data[i] = nilai_total;
+        }
+        cursor.close();
+
+        db.close();
+        return data;
+    }
+
+    public int[] getLabelDataTraining(){
+        final String TABLE_NAME = "fitur_data_training";
+        SQLiteDatabase db = this.getReadableDatabase();
+        int[] data = new int[getFeatureCount()];
+
+        String selectQuery = "SELECT * FROM " + TABLE_FEATURE;
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            int i = 0;
+            do {
+                data[i] = cursor.getInt(cursor.getColumnIndex("label"));
+                i++;
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        db.close();
+        return data;
+    }
+
+    public double[][] getDataWeightLayerOne(){
+        final String TABLE_NAME = "weight_nn_satu";
+        SQLiteDatabase db = this.getReadableDatabase();
+        double[][] data = new double[getWeightOneCount()][43];
+
+        String selectQuery = "SELECT * FROM " + TABLE_NAME;
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            int i = 0;
+            do {
+                String[] columnNames = cursor.getColumnNames();
+                int a = 0;
+                for(int j = 1; j < columnNames.length; j++){
+                    data[i][a] = cursor.getDouble(cursor.getColumnIndex(columnNames[j]));
+                    a++;
+                }
+                i++;
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        db.close();
+        return data;
+    }
+
+    public double[][] getDataWeightLayerTwo(){
+        final String TABLE_NAME = "weight_nn_dua";
+        SQLiteDatabase db = this.getReadableDatabase();
+        double[][] data = new double[getWeightTwoCount()][32];
+
+        String selectQuery = "SELECT * FROM " + TABLE_NAME;
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            int i = 0;
+            do {
+                String[] columnNames = cursor.getColumnNames();
+                int a = 0;
+                for(int j = 1; j < columnNames.length; j++){
+                    data[i][a] = cursor.getDouble(cursor.getColumnIndex(columnNames[j]));
+                    a++;
+                }
+                i++;
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        db.close();
+        return data;
+    }
+
+    public double[][] getDataWeightLayerThree(){
+        final String TABLE_NAME = "weight_nn_tiga";
+        SQLiteDatabase db = this.getReadableDatabase();
+        double[][] data = new double[getWeightThreeCount()][20];
+
+        String selectQuery = "SELECT * FROM " + TABLE_NAME;
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            int i = 0;
+            do {
+                String[] columnNames = cursor.getColumnNames();
+                int a = 0;
+                for(int j = 1; j < columnNames.length; j++){
+                    data[i][a] = cursor.getDouble(cursor.getColumnIndex(columnNames[j]));
+                    a++;
+                }
+                i++;
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        db.close();
+        return data;
     }
 }

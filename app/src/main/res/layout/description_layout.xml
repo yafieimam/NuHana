@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/aksara_jawa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_centerHorizontal="true"/>
+    
+    <RelativeLayout
+        android:layout_width="600dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/aksara_jawa">
+
+        <TextView
+            android:id="@+id/txt_cara_membaca"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:text="Cara Membaca : "
+            android:textSize="20dp" />
+
+        <TextView
+            android:id="@+id/txt_contoh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/txt_cara_membaca"
+            android:layout_margin="20dp"
+            android:layout_marginLeft="100dp"
+            android:text="Contoh Penggunaan : "
+            android:textSize="20dp" />
+
+        <TextView
+            android:id="@+id/nama_aksara_jawa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/txt_cara_membaca"
+            android:textSize="30dp" />
+
+        <TextView
+            android:id="@+id/contoh_aksara"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/txt_contoh"
+            android:layout_centerHorizontal="true"
+            android:textSize="30dp" />
+
+        <Button
+            android:id="@+id/btn_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="5dp"
+            android:text="Back" />
+
+    </RelativeLayout>
+
+
+
+</RelativeLayout>
